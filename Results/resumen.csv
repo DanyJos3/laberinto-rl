@@ -1,0 +1,4 @@
+﻿Algoritmo,EpisodiosEvaluados,ExitoEvaluacionPct,FosoPct,RecompensaPromedio,PasosPromedio,ColisionesPromedio,VisitasRepetidasPromedio,ExitoEntrenamientoPct
+MonteCarlo,100,0,0,-528.38,500,14.19,475.31,0
+Sarsa,100,97,3,-50.7,139.08,3.31,3.87,94.84
+QLearning,100,97,3,-50.25,138.89,3.18,3.74,92.3
