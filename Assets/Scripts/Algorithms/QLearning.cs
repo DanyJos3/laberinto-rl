@@ -72,7 +72,7 @@ public class QLearning : MonoBehaviour
 
             if (result.isTerminal)
             {
-                reachedGoal = true;
+                reachedGoal = gridManager.IsGoal(result.nextState);
                 break;
             }
         }

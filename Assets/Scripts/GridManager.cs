@@ -15,8 +15,9 @@ public class GridManager : MonoBehaviour
     [SerializeField] private Color wallColor = Color.black;
     [SerializeField] private Color startColor = Color.green;
     [SerializeField] private Color goalColor = Color.cyan;
+    [SerializeField] private Color pitColor = Color.red;
 
-    // 0 = libre, 1 = muro, 2 = inicio, 3 = meta.
+    // 0 = libre, 1 = muro, 2 = inicio, 3 = meta, 4 = foso.
     private readonly int[,] maze =
     {
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
@@ -26,7 +27,7 @@ public class GridManager : MonoBehaviour
         {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1,0,1},
         {1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1},
         {1,0,1,0,1,1,1,0,0,0,1,1,1,1,1,0,1,0,1,0,1,0,1},
-        {1,0,0,0,0,0,1,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,1},
+        {1,0,0,0,0,0,1,0,1,0,4,0,0,0,0,0,0,0,0,0,1,0,1},
         {1,1,1,1,1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1},
         {1,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,1},
         {1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,0,1},
@@ -34,7 +35,7 @@ public class GridManager : MonoBehaviour
         {1,0,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1},
         {1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,1,0,0,0,0,0,1},
         {1,0,1,0,1,1,1,0,1,0,1,0,1,1,1,1,1,0,1,1,1,0,1},
-        {1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,0,0,1,0,1},
+        {1,0,1,0,0,0,0,0,0,0,1,0,4,0,1,0,1,0,0,0,1,0,1},
         {1,0,1,1,1,0,1,1,1,0,1,1,1,0,1,0,1,0,1,0,1,0,1},
         {1,0,0,0,1,0,1,0,0,0,0,0,0,0,1,0,0,0,1,0,1,0,1},
         {1,1,1,0,1,0,1,0,1,1,1,0,1,0,1,1,0,1,1,0,1,0,1},
@@ -176,6 +177,8 @@ public class GridManager : MonoBehaviour
                 return startColor;
             case 3:
                 return goalColor;
+            case 4:
+                return pitColor;
             default:
                 return Color.magenta;
         }
@@ -232,9 +235,19 @@ public class GridManager : MonoBehaviour
         return IsValidState(state) && !IsWall(state);
     }
 
-    public bool IsTerminal(int state)
+    public bool IsGoal(int state)
     {
         return state == GoalState;
+    }
+
+    public bool IsPit(int state)
+    {
+        return GetCellType(state) == 4;
+    }
+
+    public bool IsTerminal(int state)
+    {
+        return IsGoal(state) || IsPit(state);
     }
 
     public int GetCellType(int state)

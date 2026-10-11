@@ -97,7 +97,7 @@ public class MonteCarlo : MonoBehaviour
 
             if (result.isTerminal)
             {
-                reachedGoal = true;
+                reachedGoal = gridManager.IsGoal(result.nextState);
                 break;
             }
         }

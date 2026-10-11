@@ -9,6 +9,7 @@ public class AgentController : MonoBehaviour
     [SerializeField] private float stepReward = -1f;
     [SerializeField] private float wallReward = -3f;
     [SerializeField] private float goalReward = 100f;
+    [SerializeField] private float pitReward = -100f;
 
     [Header("Visualización")]
     [SerializeField] private float zOffset = -0.5f;
@@ -83,10 +84,16 @@ public class AgentController : MonoBehaviour
         bool isTerminal =
             gridManager.IsTerminal(nextState);
 
-        float reward =
-            isTerminal
-                ? goalReward
-                : stepReward;
+        float reward = stepReward;
+
+        if (gridManager.IsGoal(nextState))
+        {
+            reward = goalReward;
+        }
+        else if (gridManager.IsPit(nextState))
+        {
+            reward = pitReward;
+        }
 
         return new StepResult(
             previousState,

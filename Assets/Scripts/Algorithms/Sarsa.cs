@@ -64,7 +64,7 @@ public class Sarsa : MonoBehaviour
                 qTable[state, action] +=
                     alpha * (result.reward - qTable[state, action]);
 
-                reachedGoal = true;
+                reachedGoal = gridManager.IsGoal(result.nextState);
                 break;
             }
 
