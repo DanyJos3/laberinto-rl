@@ -497,7 +497,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9875a245ac49007498213638a307faa1, type: 2}
+  - {fileID: 2100000, guid: 21be491275aeb774b9c5edf9fa0a2f0a, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -582,7 +582,7 @@ MonoBehaviour:
   gamma: 0.99
   epsilon: 1
   minimumEpsilon: 0.05
-  epsilonDecay: 0.995
+  epsilonDecay: 0.999
 --- !u!114 &2090591442
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -600,7 +600,8 @@ MonoBehaviour:
   gamma: 0.99
   epsilon: 1
   minimumEpsilon: 0.05
-  epsilonDecay: 0.995
+  epsilonDecay: 0.999
+  randomStartProbability: 0.5
 --- !u!114 &2090591443
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -619,7 +620,7 @@ MonoBehaviour:
   gamma: 0.99
   epsilon: 1
   minimumEpsilon: 0.05
-  epsilonDecay: 0.995
+  epsilonDecay: 0.999
 --- !u!114 &2090591444
 MonoBehaviour:
   m_ObjectHideFlags: 0

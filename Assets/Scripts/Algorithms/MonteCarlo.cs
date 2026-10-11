@@ -13,6 +13,13 @@ public class MonteCarlo : MonoBehaviour
     [SerializeField] private float minimumEpsilon = 0.05f;
     [SerializeField] private float epsilonDecay = 0.995f;
 
+    [Header("Exploración")]
+    [Tooltip("Probabilidad de que un episodio de entrenamiento " +
+             "comience en una celda aleatoria (exploring starts). " +
+             "Sin esto, Monte Carlo casi nunca encuentra la meta.")]
+    [Range(0f, 1f)]
+    [SerializeField] private float randomStartProbability = 0.5f;
+
     private const int NumberOfActions = 4;
 
     private float[,] qTable;
@@ -63,6 +70,11 @@ public class MonteCarlo : MonoBehaviour
     {
         agentController.ResetAgent();
 
+        if (Random.value < randomStartProbability)
+        {
+            MoveToRandomState();
+        }
+
         List<EpisodeStep> episode = new List<EpisodeStep>();
         float totalReward = 0f;
         int steps = 0;
@@ -98,6 +110,23 @@ public class MonteCarlo : MonoBehaviour
             steps,
             reachedGoal
         );
+    }
+
+    private void MoveToRandomState()
+    {
+        for (int attempt = 0; attempt < 1000; attempt++)
+        {
+            int state = Random.Range(1, gridManager.TotalStates + 1);
+
+            if (
+                gridManager.IsTraversable(state) &&
+                !gridManager.IsTerminal(state)
+            )
+            {
+                agentController.MoveToState(state);
+                return;
+            }
+        }
     }
 
     public int GetGreedyAction(
@@ -154,14 +183,24 @@ public class MonteCarlo : MonoBehaviour
 
     private void UpdateQValues(List<EpisodeStep> episode)
     {
+        // Retorno G_t de cada paso, calculado de atrás hacia adelante.
+        float[] returns = new float[episode.Count];
         float returnG = 0f;
-        HashSet<long> updatedPairs = new HashSet<long>();
 
         for (int i = episode.Count - 1; i >= 0; i--)
         {
-            EpisodeStep step = episode[i];
+            returnG = episode[i].reward + gamma * returnG;
+            returns[i] = returnG;
+        }
 
-            returnG = step.reward + gamma * returnG;
+        // Primera visita: se recorre hacia adelante para que cada par
+        // (estado, acción) se actualice con el retorno de su PRIMERA
+        // aparición y no con el de la última.
+        HashSet<long> updatedPairs = new HashSet<long>();
+
+        for (int i = 0; i < episode.Count; i++)
+        {
+            EpisodeStep step = episode[i];
 
             long key =
                 ((long)step.state * NumberOfActions) + step.action;
@@ -174,7 +213,7 @@ public class MonteCarlo : MonoBehaviour
             visitCounts[step.state, step.action]++;
 
             qTable[step.state, step.action] +=
-                (returnG - qTable[step.state, step.action]) /
+                (returns[i] - qTable[step.state, step.action]) /
                 visitCounts[step.state, step.action];
         }
     }
