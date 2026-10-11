@@ -27,3 +27,12 @@
 
 # Unity/IDE caches
 sysinfo.txt
+
+# Respaldos automáticos de escenas de Unity
+Assets/_Recovery/
+Assets/_Recovery.meta
+
+# Archivos del sistema operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
