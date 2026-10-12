@@ -26,6 +26,12 @@ public class EpisodeManager : MonoBehaviour
     [SerializeField] private bool trainOnStart;
     [SerializeField] private bool showPolicyAfterTraining = true;
 
+    [Header("Evaluación")]
+    [SerializeField] private int evaluationEpisodes = 100;
+    [SerializeField] private int evaluationMaxSteps = 500;
+    [Range(0f, 1f)]
+    [SerializeField] private float evaluationEpsilon = 0.05f;
+
     [Header("Demostración")]
     [SerializeField] private float movementDelay = 0.15f;
     [SerializeField] private int maxDemonstrationSteps = 500;
@@ -35,6 +41,8 @@ public class EpisodeManager : MonoBehaviour
     [SerializeField] private int successfulEpisodes;
     [SerializeField] private float currentReward;
     [SerializeField] private int currentSteps;
+
+    private int trainingPits;
 
     private Coroutine trainingCoroutine;
     private Coroutine demonstrationCoroutine;
@@ -142,6 +150,10 @@ public class EpisodeManager : MonoBehaviour
             {
                 successfulEpisodes++;
             }
+            else if (gridManager.IsPit(agentController.CurrentState))
+            {
+                trainingPits++;
+            }
 
             if (episode % 100 == 0)
             {
@@ -154,13 +166,78 @@ public class EpisodeManager : MonoBehaviour
         Debug.Log(
             $"Entrenamiento finalizado | " +
             $"Algoritmo: {selectedAlgorithm} | " +
-            $"Éxitos: {successfulEpisodes}/{totalEpisodes}"
+            $"Éxitos: {successfulEpisodes}/{totalEpisodes} | " +
+            $"Fosos: {trainingPits} | " +
+            $"Tiempo agotado: {totalEpisodes - successfulEpisodes - trainingPits}"
         );
+
+        EvaluatePolicy();
 
         if (showPolicyAfterTraining)
         {
             StartPolicyDemonstration();
         }
+    }
+
+    private void EvaluatePolicy()
+    {
+        int goals = 0;
+        int pits = 0;
+        float sumReward = 0f;
+        float sumSteps = 0f;
+        float sumCollisions = 0f;
+        float sumRepeated = 0f;
+
+        for (int episode = 1; episode <= evaluationEpisodes; episode++)
+        {
+            agentController.ResetAgent();
+
+            float reward = 0f;
+            int steps = 0;
+
+            while (
+                steps < evaluationMaxSteps &&
+                !agentController.IsGoalReached()
+            )
+            {
+                int state = agentController.CurrentState;
+
+                int action =
+                    Random.value < evaluationEpsilon
+                        ? Random.Range(0, 4)
+                        : GetDeterministicGreedyAction(state);
+
+                reward += agentController
+                    .ExecuteAction((ActionType)action).reward;
+                steps++;
+            }
+
+            bool reachedGoal =
+                gridManager.IsGoal(agentController.CurrentState);
+            bool fellInPit =
+                gridManager.IsPit(agentController.CurrentState);
+
+            if (reachedGoal) goals++;
+            if (fellInPit) pits++;
+
+            sumReward += reward;
+            sumSteps += steps;
+            sumCollisions += agentController.Collisions;
+            sumRepeated += agentController.RepeatedVisits;
+        }
+
+        float n = evaluationEpisodes;
+
+        Debug.Log(
+            $"RESUMEN {selectedAlgorithm} | Episodios: {evaluationEpisodes} | " +
+            $"Éxito: {100f * goals / n:F1}% | Fosos: {pits} | " +
+            $"Recompensa media: {sumReward / n:F1} | " +
+            $"Pasos medios: {sumSteps / n:F1} | " +
+            $"Colisiones medias: {sumCollisions / n:F2} | " +
+            $"Visitas repetidas medias: {sumRepeated / n:F1}"
+        );
+
+        agentController.ResetAgent();
     }
 
     private IEnumerator DemonstrationRoutine()
@@ -237,6 +314,7 @@ public class EpisodeManager : MonoBehaviour
     {
         currentEpisode = 0;
         successfulEpisodes = 0;
+        trainingPits = 0;
         currentReward = 0f;
         currentSteps = 0;
         rewardHistory.Clear();

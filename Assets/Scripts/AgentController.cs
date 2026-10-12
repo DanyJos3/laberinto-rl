@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class AgentController : MonoBehaviour
@@ -14,7 +15,11 @@ public class AgentController : MonoBehaviour
     [Header("Visualización")]
     [SerializeField] private float zOffset = -0.5f;
 
+    private readonly HashSet<int> visitedStates = new HashSet<int>();
+
     public int CurrentState { get; private set; }
+    public int Collisions { get; private set; }
+    public int RepeatedVisits { get; private set; }
 
     private void Awake()
     {
@@ -43,6 +48,11 @@ public class AgentController : MonoBehaviour
         }
 
         MoveToState(gridManager.StartState);
+
+        Collisions = 0;
+        RepeatedVisits = 0;
+        visitedStates.Clear();
+        visitedStates.Add(CurrentState);
     }
 
     public void MoveToState(int state)
@@ -70,6 +80,8 @@ public class AgentController : MonoBehaviour
             )
         )
         {
+            Collisions++;
+
             return new StepResult(
                 previousState,
                 (int)action,
@@ -80,6 +92,11 @@ public class AgentController : MonoBehaviour
         }
 
         MoveToState(nextState);
+
+        if (!visitedStates.Add(nextState))
+        {
+            RepeatedVisits++;
+        }
 
         bool isTerminal =
             gridManager.IsTerminal(nextState);
